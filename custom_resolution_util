@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+function addNewMode()
+{
+    MESSAGES=""
+    IS_VALID=true
+    xRandrCmd=$(xrandr -q)
+    screenList=( $(echo "$xRandrCmd" | grep -o '[A-Z]\{2,\}[0-9]\{1,2\}') )
+
+    read -p "Enter screen width (pixel): " screenWidth
+    if ! [[ "$screenWidth" =~ ^[0-9]+$ ]]; then
+        MESSAGES+="* Screen width must be numeric\n"
+        IS_VALID=false
+    fi
+
+    read -p "Enter screen height (pixel): " screenHeight
+    if ! [[ "$screenHeight" =~ ^[0-9]+$ ]]; then
+        MESSAGES+="* Screen height must be numeric\n"
+        IS_VALID=false
+    fi
+
+    echo "Screen name: ${screenList[@]}"
+    read -p "Enter screen name: " screenName
+
+    if [[ "$screenName" == "" ]]; then
+        MESSAGES+="* Screen name is required\n"
+        IS_VALID=false
+    fi
+
+    if [[ "$IS_VALID" == "true" ]]; then
+        CVT_MESSAGE=$(cvt "$screenWidth" "$screenHeight")
+        SCREEN_MODE=$(echo "$CVT_MESSAGE" | grep -o '\".*$')
+        SCREEN_MODE_NAME=$(echo "$SCREEN_MODE" | grep -o '[0-9]\+x[0-9]\+_[0-9]\+\.[0-9]\+')
+
+        $(xrandr --newmode $SCREEN_MODE > /dev/null 2>&1)
+        $(xrandr --addmode $screenName $SCREEN_MODE_NAME > /dev/null 2>&1)
+        echo "Add new screen mode succeed. Please check in [System settings... -> Display]"
+    else
+        printf "$MESSAGES"
+    fi
+}
+
+function showScreenList()
+{
+    xRandrCmd=$(xrandr -q)
+    screenList=( $(echo "$xRandrCmd" | grep -o '[A-Z]\{2,\}[0-9]\{1,2\}') )
+    echo "Screen name: ${screenList[@]}"
+}
+
+function aboutMe()
+{
+    echo "
+---------------------------------
+----Custom Resolution Utility----
+---------------------------------
+* Author: NamNV609
+* Email: namnv609@gmail.com
+* Homepage: http://namnv609.cf
+---------------------------------
+    "
+}
+
+MENU_ITEMS=("Add new screen mode" "Show screen list" "About me" "Exit")
+
+select MENU_ITEM in "${MENU_ITEMS[@]}"
+do
+    case $MENU_ITEM in
+        "Add new screen mode")
+            addNewMode
+            ;;
+        "Show screen list")
+            showScreenList
+            ;;
+        "About me")
+            aboutMe
+            ;;
+        "Exit")
+            echo "Goodbye :-h (wave)"
+            break
+            ;;
+        *) echo "Invalid option"
+    esac
+done

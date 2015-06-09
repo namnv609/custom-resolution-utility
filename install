@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+sourceFile="/usr/bin/cru"
+
+echo "
+---Custom Resolution Utility---
+        by NamNV609
+-------------------------------
+"
+
+function install()
+{
+    if [ ! -f $sourceFile ]; then
+        $(sudo cp custom_resolution_util $sourceFile)
+        $(sudo chmod 755 $sourceFile)
+        echo "Install completed"
+        exit 1
+    else
+        echo "Program already installed"
+    fi
+}
+
+function uninstall()
+{
+    if [ -f $sourceFile ]; then
+        $(sudo rm $sourceFile)
+        echo "Uninstall completed"
+        exit 1
+    else
+        echo "Program is not already installed."
+    fi
+}
+
+MENU_TEXT="Please select an action:"
+MENU_ITEMS=("Install"  "Uninstall")
+
+select MENU_ITEM in "${MENU_ITEMS[@]}"
+do
+    case $MENU_ITEM in
+        "Install")
+            install
+            ;;
+        "Uninstall")
+            uninstall
+            ;;
+        *)
+            echo "Goodbye :-h (wave)"
+            exit 1
+    esac
+done
